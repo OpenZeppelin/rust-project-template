@@ -1,6 +1,48 @@
 [package]
-name = "robust-rust-lib-template"
+name = "{{project-slug}}"
 version = "0.1.0"
 edition = "2024"
+authors = ["OpenZeppelin"]
+publish = true
+description = "{{project-description}}"
+categories = [
+    # https://doc.rust-lang.org/cargo/reference/manifest.html#the-categories-field
+]
+keywords = [
+    # https://doc.rust-lang.org/cargo/reference/manifest.html#the-keywords-field
+]
+license = "{{license}}"
+repository = "https://github.com/OpenZeppelin/{{project-slug}}"
+exclude = [
+    ".github/",
+    ".vscode/",
+    ".config/",
+    ".cargo/",
+    "benches/",
+    "tests/",
+]
 
 [dependencies]
+
+[dev-dependencies]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[lints.clippy]
+pedantic = "warn"
+all = "warn"
+
+[lints.rust]
+missing_docs = "warn"
+unreachable_pub = "warn"
+rust_2021_compatibility = { level = "warn", priority = -1 }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[features]
+
+[profile.release]
+lto = "thin"
+panic = "abort"
+codegen-units = 1
+strip = true

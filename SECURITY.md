@@ -21,7 +21,7 @@ We're extremely grateful for security researchers and users that report vulnerab
 All reports are thoroughly investigated by the project's security team.
 
 Vulnerabilities are reported privately via GitHub's [Security Advisories](https://docs.github.com/en/code-security/security-advisories) feature.
-Please use the following link to submit your vulnerability: [Report a vulnerability](https://github.com/openzeppelin/{{github-project-slug}}/security/advisories/new)
+Please use the following link to submit your vulnerability: [Report a vulnerability](https://github.com/openzeppelin/{{project-slug}}/security/advisories/new)
 
 Please see
 [Privately reporting a security vulnerability](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability#privately-reporting-a-security-vulnerability)
