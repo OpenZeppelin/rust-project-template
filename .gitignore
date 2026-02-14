@@ -1,1 +1,7 @@
 /target
+/examples/**/target
+.DS_Store
+
+# code coverage
+lcov.info
+lcov.infos
