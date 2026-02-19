@@ -1,5 +1,5 @@
-/target
-/examples/**/target
+**/target
+
 .DS_Store
 
 # code coverage
