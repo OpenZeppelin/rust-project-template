@@ -1,10 +1,11 @@
 ---
 name: CLA Assistant
+permissions: {}
 on:
-  issue_comment:
+  issue_comment: # zizmor: ignore[dangerous-triggers] CLA Assistant reads sign comments; no PR code is checked out
     types:
       - created
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] CLA Assistant needs write access on fork PRs; no PR code is checked out
     types:
       - opened
       - closed
@@ -28,6 +29,7 @@ jobs:
       - name: Checkout Private Repo for Allowlist
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
+          persist-credentials: false
           repository: OpenZeppelin/cla-sigs
           token: ${{ secrets.CLA_SIGS_ACCESS_PAT }}
           sparse-checkout: |
@@ -40,9 +42,11 @@ jobs:
           echo "allowlist=$ALLOWLIST" >> $GITHUB_OUTPUT
       - name: Check if user is in allowlist
         id: check_allowlist
+        env:
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          ALLOWLIST: ${{ steps.read_allowlist.outputs.allowlist }}
         run: |
-          PR_USER=${{ github.event.pull_request.user.login }}
-          if [[ "${{ steps.read_allowlist.outputs.allowlist }}" == *"$PR_USER"* ]]; then
+          if [[ "$ALLOWLIST" == *"$PR_USER"* ]]; then
             echo "is_allowed=true" >> $GITHUB_OUTPUT
           else
             echo "is_allowed=false" >> $GITHUB_OUTPUT
@@ -68,6 +72,8 @@ jobs:
           custom-pr-sign-comment: I confirm that I have read and hereby agree to the OpenZeppelin Contributor License Agreement
       - name: Label PR as CLA Unsigned
         if: ${{ steps.cla_assistant.outcome != 'success' && steps.check_allowlist.outputs.is_allowed == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
             PR_NUMBER="${{ github.event.pull_request.number }}"
@@ -77,13 +83,15 @@ jobs:
           ENDPOINT="https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
           curl -L -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             -d '{"labels":["cla: unsigned"]}' \
             $ENDPOINT
           exit 1
       - name: Label PR as CLA Signed
         if: ${{ steps.cla_assistant.outcome == 'success' && steps.check_allowlist.outputs.is_allowed == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
           if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
             PR_NUMBER="${{ github.event.pull_request.number }}"
@@ -94,18 +102,20 @@ jobs:
           # Remove 'cla: unsigned' label if present
           curl -L -X DELETE \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "$ENDPOINT/cla:%20unsigned" || true
           # Add 'cla: signed' label
           curl -L -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             -d '{"labels":["cla: signed"]}' \
             $ENDPOINT
       - name: Label PR as CLA Allowlist
         if: ${{ steps.check_allowlist.outputs.is_allowed == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
           if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
             PR_NUMBER="${{ github.event.pull_request.number }}"
@@ -116,19 +126,19 @@ jobs:
           # Remove 'cla: unsigned' label if present
           curl -L -X DELETE \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "$ENDPOINT/cla:%20unsigned" || true
           # Remove 'cla: signed' label if present
           curl -L -X DELETE \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "$ENDPOINT/cla:%20signed" || true
           # Add allowlist label
           curl -L -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             -d '{"labels":["cla: allowlist"]}' \
             $ENDPOINT

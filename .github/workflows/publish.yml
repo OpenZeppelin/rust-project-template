@@ -1,0 +1,65 @@
+# This workflow publishes the crate to crates.io when a GitHub release is published. It uses
+# crates.io trusted publishing, so no long-lived API token is stored in the repository.
+#
+# Trusted publishing can only be configured for a crate that already exists on crates.io. Publish
+# the first version manually, then add this repository and `publish.yml` as a trusted publisher in
+# the crate's settings on crates.io.
+name: publish
+permissions:
+  contents: read
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    name: publish to crates.io
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # tag=v2.22.3
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # tag=v7.0.1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+      - name: Verify tag matches crate version
+        run: |
+          PKG_VERSION=$(cargo metadata --no-deps --format-version 1 \
+            | jq -r '.packages[] | select(.name=="rust-project-template") | .version')
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+
+          echo "Package:  ${PKG_VERSION}"
+          echo "Tag:      ${TAG_VERSION}"
+
+          if [ -z "$PKG_VERSION" ]; then
+            echo "Failed to determine package version via cargo metadata" >&2
+            exit 1
+          fi
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag v${TAG_VERSION} does not match package version ${PKG_VERSION}" >&2
+            exit 1
+          fi
+      - name: cargo publish --dry-run
+        run: cargo publish --locked --dry-run
+      # Exchanges the GitHub OIDC token for a short-lived crates.io token
+      - name: Authenticate with crates.io
+        id: auth
+        uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # tag=v1.0.6
+      - name: cargo publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: cargo publish --locked
