@@ -28,11 +28,16 @@ jobs:
       matrix:
         target: [thumbv7m-none-eabi, aarch64-unknown-none]
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # tag=v2.22.3
+        with:
+          egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # tag=v7.0.1
         with:
+          persist-credentials: false
           submodules: true
       - name: Install stable
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # branch=master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
       - name: rustup target add ${{ matrix.target }}

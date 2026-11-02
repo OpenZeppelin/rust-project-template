@@ -148,7 +148,7 @@ repository from this template.
 
 - `check.yml`:
   - Formatting, clippy (stable/beta), docs, feature-powerset (`cargo-hack`),
-    and MSRV check.
+    MSRV check, and a `zizmor` audit of the workflows.
   - **Update the MSRV value** in the matrix to your crate’s MSRV.
 - `test.yml`:
   - Tests on stable/beta, minimal dependency versions, OS matrix, coverage.
@@ -160,6 +160,11 @@ repository from this template.
   - Note: this workflow installs system packages; keep only if you want it.
 - `nostd.yml`:
   - Only keep if your crate supports `no_std` (and configure targets/features).
+- `publish.yml`:
+  - Publishes the crate to crates.io when a GitHub release is published, using
+    trusted publishing.
+  - Publish the first version manually, then add the repository and
+    `publish.yml` as a trusted publisher in the crate's crates.io settings.
 
 ### `.github/dependabot.yml`
 

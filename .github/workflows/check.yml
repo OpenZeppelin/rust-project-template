@@ -6,6 +6,7 @@
 # - hack: check combinations of feature flags
 # - msrv: check that the msrv specified in the crate is correct
 # - typos: checks for common spelling mistakes in source and docs
+# - zizmor: audits the workflows for security issues and uploads findings to code scanning
 name: check
 permissions:
   contents: read
@@ -32,9 +33,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # tag=v7.0.1
         with:
+          persist-credentials: false
           submodules: true
       - name: Install nightly Rust
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # branch=master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: nightly
           components: rustfmt
@@ -46,6 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # tag=v7.0.1
         with:
+          persist-credentials: false
           submodules: true
       - name: typos
         uses: crate-ci/typos@7f9d0819ca1c008ade73f4b41fa9d258d48f605b # tag=v1.51.1
@@ -61,11 +64,16 @@ jobs:
         # Get early warning of new lints which are regularly introduced in beta channels.
         toolchain: [stable, beta]
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # tag=v2.22.3
+        with:
+          egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # tag=v7.0.1
         with:
+          persist-credentials: false
           submodules: true
       - name: Install ${{ matrix.toolchain }}
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # branch=master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: ${{ matrix.toolchain }}
           components: clippy
@@ -77,15 +85,20 @@ jobs:
           clippy_flags: --all-targets --all-features -- -D warnings -D clippy::all -D clippy::pedantic
   semver:
     # REMOVE THE `if` CHECK AFTER FIRST PUBLISH TO crates.io
-    if: ${{ false }}
+    if: false
     runs-on: ubuntu-latest
     name: semver
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # tag=v2.22.3
+        with:
+          egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # tag=v7.0.1
         with:
+          persist-credentials: false
           submodules: true
       - name: Install stable
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # branch=master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
           components: rustfmt
@@ -98,15 +111,20 @@ jobs:
     runs-on: ubuntu-latest
     name: nightly / doc
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # tag=v2.22.3
+        with:
+          egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # tag=v7.0.1
         with:
+          persist-credentials: false
           submodules: true
       - name: Install nightly
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # branch=master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: nightly
       - name: Install cargo-docs-rs
-        uses: dtolnay/install@982daea0f5d846abc3c83e01a6a1d73c040047c1 # branch=cargo-docs-rs
+        uses: dtolnay/install@982daea0f5d846abc3c83e01a6a1d73c040047c1 # cargo-docs-rs
       - name: cargo docs-rs
         run: cargo docs-rs
         env:
@@ -117,11 +135,16 @@ jobs:
     runs-on: ubuntu-latest
     name: ubuntu / stable / features
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # tag=v2.22.3
+        with:
+          egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # tag=v7.0.1
         with:
+          persist-credentials: false
           submodules: true
       - name: Install stable
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # branch=master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: stable
       - name: cargo install cargo-hack
@@ -142,11 +165,16 @@ jobs:
         msrv: ["1.85.0"] # 2024 edition requires 1.85.0
     name: ubuntu / ${{ matrix.msrv }}
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # tag=v2.22.3
+        with:
+          egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # tag=v7.0.1
         with:
+          persist-credentials: false
           submodules: true
       - name: Install ${{ matrix.msrv }}
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # branch=master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: ${{ matrix.msrv }}
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # tag=v6.1.0
@@ -155,3 +183,18 @@ jobs:
           key: ${{ runner.os }}-cargo
       - name: cargo +${{ matrix.msrv }} check
         run: cargo check
+  zizmor:
+    runs-on: ubuntu-latest
+    name: zizmor
+    permissions:
+      security-events: write
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # tag=v2.22.3
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # tag=v7.0.1
+        with:
+          persist-credentials: false
+      - name: zizmor
+        uses: zizmorcore/zizmor-action@53290badfa369cb0bf7ad16342cb62c2fa47ac7b # tag=v0.8.0
