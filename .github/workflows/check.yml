@@ -36,7 +36,7 @@ jobs:
           persist-credentials: false
           submodules: true
       - name: Install nightly Rust
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # tag=v1
         with:
           toolchain: nightly
           components: rustfmt
@@ -73,7 +73,7 @@ jobs:
           persist-credentials: false
           submodules: true
       - name: Install ${{ matrix.toolchain }}
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # tag=v1
         with:
           toolchain: ${{ matrix.toolchain }}
           components: clippy
@@ -98,7 +98,7 @@ jobs:
           persist-credentials: false
           submodules: true
       - name: Install stable
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # tag=v1
         with:
           toolchain: stable
           components: rustfmt
@@ -120,11 +120,11 @@ jobs:
           persist-credentials: false
           submodules: true
       - name: Install nightly
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # tag=v1
         with:
           toolchain: nightly
       - name: Install cargo-docs-rs
-        uses: dtolnay/install@982daea0f5d846abc3c83e01a6a1d73c040047c1 # cargo-docs-rs
+        uses: dtolnay/install@982daea0f5d846abc3c83e01a6a1d73c040047c1 # tag=cargo-docs-rs
       - name: cargo docs-rs
         run: cargo docs-rs
         env:
@@ -144,7 +144,7 @@ jobs:
           persist-credentials: false
           submodules: true
       - name: Install stable
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # tag=v1
         with:
           toolchain: stable
       - name: cargo install cargo-hack
@@ -174,7 +174,7 @@ jobs:
           persist-credentials: false
           submodules: true
       - name: Install ${{ matrix.msrv }}
-        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # tag=v1
         with:
           toolchain: ${{ matrix.msrv }}
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # tag=v6.1.0
