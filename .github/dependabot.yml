@@ -3,11 +3,13 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       actions-deps:
         patterns:
           - "*"
+    commit-message:
+      prefix: 'chore(deps): '
 
   - package-ecosystem: cargo
     directory: /
